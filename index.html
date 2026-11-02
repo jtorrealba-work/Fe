@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El santo del año · Providencia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;1,400&family=Oswald:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+  --bg:#F4F6F9; --paper:#FFFFFF; --navy:#1B3A6B; --blue:#2E5FA3; --sky:#7BBFD4;
+  --ink:#2C2C2C; --muted:#555555; --rule:#D0D8E8;
+  --head:#1B3A6B; --accent:#2E5FA3; --btn-bg:#1B3A6B; --btn-ink:#FFFFFF; --focus:#2E5FA3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0D1F3C; --paper:#142B52; --ink:#F4F6F9; --muted:#B3C0D8; --rule:#2A4778;
+    --head:#F4F6F9; --accent:#7BBFD4; --btn-bg:#7BBFD4; --btn-ink:#0D1F3C; --focus:#7BBFD4;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0D1F3C; --paper:#142B52; --ink:#F4F6F9; --muted:#B3C0D8; --rule:#2A4778;
+  --head:#F4F6F9; --accent:#7BBFD4; --btn-bg:#7BBFD4; --btn-ink:#0D1F3C; --focus:#7BBFD4;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Montserrat",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px; line-height:1.65;
+}
+main{max-width:760px; margin:0 auto; padding:40px 20px 72px}
+h1,h2,h3{font-family:"Oswald","Arial Narrow",Impact,sans-serif; font-weight:400; margin:0; color:var(--head)}
+:focus-visible{outline:3px solid var(--focus); outline-offset:3px}
+
+header{text-align:center; margin-bottom:24px}
+h1{font-size:clamp(2.1rem,8vw,3.4rem); line-height:1.08; letter-spacing:.06em; text-transform:uppercase}
+.lede{margin:14px auto 0; max-width:34em; color:var(--muted)}
+
+.stage{display:flex; flex-direction:column; align-items:center; gap:20px}
+canvas{display:block; width:min(100%,380px); aspect-ratio:1; touch-action:manipulation}
+.prayer{margin:0; max-width:26em; text-align:center; font-style:italic; color:var(--muted)}
+.spin{
+  font:500 1rem/1 "Montserrat",sans-serif; letter-spacing:.04em;
+  padding:17px 34px; border-radius:999px; border:0;
+  background:var(--btn-bg); color:var(--btn-ink); cursor:pointer;
+  transition:transform .15s ease, opacity .2s ease;
+}
+.spin:hover{transform:translateY(-1px)}
+.spin:active{transform:none}
+.spin[disabled]{opacity:.6; cursor:progress; transform:none}
+
+.filters{display:flex; flex-wrap:wrap; justify-content:center; gap:8px}
+.chip{
+  font:inherit; font-size:.85rem; color:var(--ink); padding:6px 14px; border-radius:999px;
+  border:1px solid var(--rule); background:transparent; cursor:pointer;
+  transition:opacity .2s ease, background .2s ease, border-color .2s ease;
+}
+.chip[aria-pressed="true"]{background:var(--paper); border-color:var(--accent)}
+.chip[aria-pressed="false"]{opacity:.55}
+.chip[disabled]{cursor:progress}
+.pool-note{margin:0; color:var(--muted); font-size:.85rem; text-align:center}
+
+.result{
+  position:relative; width:min(100%,470px); margin:44px auto 0; padding:96px 34px 34px;
+  background:var(--paper); border:1.5px solid var(--accent);
+  border-radius:50% 50% 8px 8px / 130px 130px 8px 8px;
+  text-align:center; opacity:0; transform:translateY(16px) scale(.98);
+  transition:opacity .55s ease, transform .55s ease;
+  scroll-margin-top:16px;
+}
+.result[hidden]{display:none}
+.result.show{opacity:1; transform:none}
+.result::before{
+  content:""; position:absolute; inset:9px; pointer-events:none;
+  border:1px solid var(--rule); border-radius:50% 50% 3px 3px / 122px 122px 3px 3px;
+}
+.badge{display:block; color:var(--accent); font-size:.8rem; font-weight:500; letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+.result h2{font-size:clamp(1.7rem,6vw,2.2rem); line-height:1.15; letter-spacing:.02em}
+.years{margin:10px 0 0; color:var(--accent); font-weight:500; font-size:.95rem; font-variant-numeric:tabular-nums; letter-spacing:.03em}
+.desc{margin:18px 0 0; font-size:.98rem}
+.lit{margin:14px 0 0; font-size:.8rem; font-weight:500; color:var(--accent); letter-spacing:.02em}
+.lit[hidden]{display:none}
+.pray{margin:24px 0 0; font-style:italic; font-size:.92rem; color:var(--muted)}
+.quote{margin:24px 0 0; padding:2px 0 2px 16px; border-left:3px solid var(--accent); text-align:left; font-style:italic; font-size:.98rem; color:var(--muted)}
+.quote[hidden]{display:none}
+.actions{display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-top:28px}
+.ghost{
+  font:inherit; font-size:.9rem; color:var(--ink); background:transparent; cursor:pointer;
+  border:1px solid var(--accent); border-radius:999px; padding:9px 20px;
+}
+.ghost:hover{background:var(--bg)}
+.ghost[disabled]{opacity:.55; cursor:progress}
+
+.history{margin-top:48px}
+.history[hidden]{display:none}
+.history h2,.pool summary{font-size:1.15rem; letter-spacing:.06em}
+.history ul{list-style:none; margin:14px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px 20px}
+.hist-btn{font:inherit; font-size:.92rem; color:var(--ink); background:none; border:0; padding:2px 0; cursor:pointer; text-decoration:underline; text-decoration-color:var(--rule); text-underline-offset:4px}
+.hist-btn:hover{text-decoration-color:var(--accent)}
+.link-btn{font:inherit; font-size:.82rem; color:var(--muted); background:none; border:0; padding:0; margin-top:12px; cursor:pointer; text-decoration:underline; text-underline-offset:3px}
+
+.pool{margin-top:40px; border-top:1px solid var(--rule); padding-top:18px}
+.pool summary{cursor:pointer; list-style:none; font-family:"Oswald","Arial Narrow",sans-serif; color:var(--head)}
+.pool summary::-webkit-details-marker{display:none}
+.pool summary::before{content:"+"; display:inline-block; width:1.2em; color:var(--accent)}
+.pool[open] summary::before{content:"–"}
+.pool input[type=search]{
+  display:block; width:100%; max-width:420px; margin:16px 0 8px; font:inherit; font-size:.92rem; color:var(--ink);
+  background:var(--paper); border:1px solid var(--rule); border-radius:8px; padding:10px 14px;
+}
+.pool h3{font-size:1rem; letter-spacing:.06em; margin:24px 0 8px; color:var(--accent)}
+.pool ul{list-style:none; margin:0; padding:0; columns:260px; column-gap:28px}
+.pool li{break-inside:avoid; display:flex; justify-content:space-between; gap:12px; padding:4px 0; border-bottom:1px solid var(--rule); font-size:.88rem}
+.pool li span:last-child{color:var(--muted); white-space:nowrap; font-size:.8rem}
+.empty{color:var(--muted); margin:16px 0 0}
+
+footer{margin-top:44px; color:var(--muted); font-size:.8rem; line-height:1.6; max-width:48em}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+@media (prefers-reduced-motion: reduce){
+  .result,.chip,.spin{transition:none}
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>El santo del año</h1>
+    <p class="lede" id="lede"></p>
+  </header>
+
+  <section class="stage" aria-label="Cielo de santos">
+    <canvas id="sky" role="img" aria-label="Cielo estrellado: cada estrella representa a un santo, beato, venerable o siervo de Dios. Una luz desciende sobre una de ellas."></canvas>
+    <p class="prayer">Señor, regálame al santo que necesito para este año.</p>
+    <button class="spin" id="spin" type="button">Recibir mi santo</button>
+    <div class="filters" id="filters" role="group" aria-label="Qué grupos entran"></div>
+    <p class="pool-note" id="poolNote"></p>
+  </section>
+
+  <article class="result" id="result" hidden aria-live="polite">
+    <span class="badge" id="rState"></span>
+    <h2 id="rName"></h2>
+    <p class="years" id="rYears"></p>
+    <p class="desc" id="rDesc"></p>
+    <p class="lit" id="rLit" hidden></p>
+    <blockquote class="quote" id="rQuote" hidden></blockquote>
+    <p class="pray" id="rPray"></p>
+    <div class="actions">
+      <button class="ghost" id="again" type="button">Recibir otro</button>
+      <button class="ghost" id="copy" type="button">Copiar</button>
+    </div>
+  </article>
+
+  <section class="history" id="historyWrap" hidden>
+    <h2>Santos recibidos</h2>
+    <ul id="history"></ul>
+    <button class="link-btn" id="clearHist" type="button">Borrar lista</button>
+  </section>
+
+  <details class="pool" id="poolDetails">
+    <summary>Ver todos los nombres</summary>
+    <label class="sr" for="q">Buscar por nombre</label>
+    <input type="search" id="q" placeholder="Buscar por nombre" autocomplete="off">
+    <div id="poolList"></div>
+  </details>
+
+  <footer>
+    No es una predicción ni un oráculo: es un gesto devocional de confianza en la Providencia, para acompañar el año con la intercesión de un santo. La lista es una selección representativa de santos, beatos, venerables y siervos de Dios; en la Iglesia hay miles de causas. Algunas frases se atribuyen por tradición. Lista revisada con noticias hasta noviembre de 2026. El estado de cada causa puede cambiar: para datos oficiales, consulta el Dicasterio para las Causas de los Santos.
+  </footer>
+</main>
+
+<script>
+/* ---------- Datos: [nombre, categoría, años, descripción, frase] ---------- */
+const SAINTS = [
+/* ===== Santos ===== */
+["San José","S","siglo I a. C. – siglo I","Carpintero de Nazaret, esposo de María y padre adoptivo de Jesús. Patrono de la Iglesia universal, de los trabajadores y de la buena muerte.",""],
+["San Juan Bautista","S","c. 6 a. C. – c. 30","Primo y precursor de Jesús. Predicó la conversión en el desierto del Jordán y bautizó al Señor. Murió decapitado por denunciar a Herodes.","Es necesario que él crezca y que yo disminuya."],
+["San Pedro","S","m. c. 64","Pescador de Galilea y primero de los apóstoles. Cristo le confió las llaves del Reino. Murió mártir en Roma.","Señor, ¿a quién iremos? Tú tienes palabras de vida eterna."],
+["San Pablo","S","c. 5 – c. 64","Perseguidor de cristianos convertido en el camino de Damasco. Apóstol de los gentiles, recorrió el Mediterráneo y escribió buena parte del Nuevo Testamento.","He peleado el buen combate, he terminado la carrera, he conservado la fe."],
+["Santa María Magdalena","S","siglo I","Discípula de Jesús, testigo de la cruz y primera en ver al Resucitado. La tradición la llama «apóstol de los apóstoles».","¡He visto al Señor!"],
+["San Esteban","S","m. c. 36","Diácono y primer mártir cristiano. Murió lapidado, perdonando a quienes lo mataban.","Señor, no les tomes en cuenta este pecado."],
+["San Judas Tadeo","S","siglo I","Apóstol de Jesús. Es invocado como patrono de las causas difíciles y desesperadas.",""],
+["San Ignacio de Antioquía","S","c. 35 – c. 107","Obispo de Antioquía y Padre apostólico. Condenado a morir ante las fieras en Roma, escribió en el camino siete cartas de gran riqueza teológica.","Soy trigo de Dios, y seré molido por los dientes de las fieras."],
+["San Policarpo de Esmirna","S","c. 69 – c. 155","Obispo de Esmirna, discípulo del apóstol Juan. Murió mártir a edad muy avanzada.","Ochenta y seis años llevo sirviéndole, y nunca me ha hecho ningún mal."],
+["Santa Perpetua","S","181 – 203","Joven madre noble de Cartago, martirizada junto a su esclava Felicidad. Su diario de prisión es uno de los textos cristianos más antiguos escritos por una mujer.",""],
+["San Lorenzo","S","m. 258","Diácono de Roma encargado de los bienes de la Iglesia. Cuando le exigieron los tesoros, presentó a los pobres.",""],
+["Santa Águeda","S","c. 231 – c. 251","Virgen y mártir de Catania, en Sicilia, venerada desde la Antigüedad.",""],
+["Santa Lucía","S","283 – 304","Virgen y mártir de Siracusa. Su nombre evoca la luz y es patrona de quienes sufren de la vista.",""],
+["San Sebastián","S","m. c. 288","Soldado romano que ayudaba en secreto a los cristianos presos. Sobrevivió a las flechas, pero fue ejecutado después.",""],
+["Santa Cecilia","S","siglo II o III","Mártir romana, patrona de la música y de los músicos.",""],
+["Santa Elena","S","c. 246 – c. 330","Madre del emperador Constantino. Peregrina en Tierra Santa, la tradición le atribuye el hallazgo de la Vera Cruz.",""],
+["San Jorge","S","m. c. 303","Soldado mártir en tiempos de Diocleciano. Patrono de Inglaterra, Cataluña, Aragón y muchos otros lugares.",""],
+["San Valentín","S","m. c. 269","Mártir romano cuyo nombre quedó unido al amor y a los enamorados.",""],
+["San Nicolás de Bari","S","c. 270 – c. 343","Obispo de Mira, famoso por su generosidad con los pobres y con los niños. De él nace la figura de Santa Claus.",""],
+["San Antonio Abad","S","c. 251 – 356","Padre del monacato. Vivió décadas de oración y ayuno en el desierto de Egipto.",""],
+["San Basilio Magno","S","c. 330 – 379","Obispo de Cesarea y Doctor de la Iglesia. Fundó hospitales y organizó la vida monástica en Oriente.",""],
+["San Ambrosio de Milán","S","c. 340 – 397","Obispo y Doctor de la Iglesia. Su predicación impulsó la conversión de san Agustín, a quien bautizó.",""],
+["San Jerónimo","S","c. 347 – 420","Erudito y Doctor de la Iglesia. Tradujo la Biblia al latín (la Vulgata) viviendo en Belén.","Ignorar las Escrituras es ignorar a Cristo."],
+["San Juan Crisóstomo","S","c. 347 – 407","Arzobispo de Constantinopla, llamado «boca de oro» por su elocuencia. Murió desterrado.",""],
+["San Agustín de Hipona","S","354 – 430","Retórico inquieto que se convirtió a los treinta y dos años. Obispo y Doctor de la Iglesia, autor de las Confesiones y La ciudad de Dios.","Nos hiciste, Señor, para ti, y nuestro corazón está inquieto hasta que descanse en ti."],
+["Santa Mónica","S","c. 331 – 387","Madre de san Agustín. Rezó y lloró durante años por la conversión de su hijo.","Enterrad este cuerpo donde queráis; solo os pido que os acordéis de mí ante el altar del Señor."],
+["San Martín de Tours","S","c. 316 – 397","Soldado romano que partió su capa con un mendigo. Luego fue monje, obispo y evangelizador de las Galias.",""],
+["San Patricio","S","c. 385 – c. 461","Esclavo en Irlanda que volvió como obispo y misionero. Apóstol y patrono de Irlanda.",""],
+["San Benito de Nursia","S","c. 480 – c. 547","Padre del monacato occidental. Su Regla ha guiado a monasterios durante quince siglos. Patrono de Europa.","Nada se anteponga al amor de Cristo."],
+["Santa Escolástica","S","c. 480 – c. 543","Hermana de san Benito y fundadora de monjas benedictinas.",""],
+["San Gregorio Magno","S","c. 540 – 604","Papa y Doctor de la Iglesia. Reformó la liturgia y envió misioneros a Inglaterra.",""],
+["San Bernardo de Claraval","S","1090 – 1153","Abad cisterciense y Doctor de la Iglesia, influyente predicador de su siglo.",""],
+["Santa Hildegarda de Bingen","S","1098 – 1179","Abadesa benedictina, mística, compositora, naturalista y escritora. Doctora de la Iglesia.",""],
+["Santo Domingo de Guzmán","S","c. 1170 – 1221","Fundador de la Orden de Predicadores. Defendió la fe con la predicación y el estudio.",""],
+["San Francisco de Asís","S","1181 – 1226","El «poverello» de Asís. Dejó la riqueza de su familia para vivir en pobreza, alegría y hermandad con toda la creación.","Alabado seas, mi Señor, por la hermana nuestra madre tierra."],
+["Santa Clara de Asís","S","1194 – 1253","Discípula de san Francisco y fundadora de las clarisas. Defendió hasta el final el privilegio de la pobreza.","Gracias a ti, Señor, por haberme creado."],
+["San Antonio de Padua","S","c. 1195 – 1231","Franciscano portugués, gran predicador y Doctor de la Iglesia. Se le invoca para hallar lo perdido.","Cesen las palabras y hablen las obras."],
+["San Alberto Magno","S","c. 1200 – 1280","Dominico alemán, patrono de los científicos y maestro de santo Tomás de Aquino.",""],
+["Santa Isabel de Hungría","S","1207 – 1231","Princesa que se hizo cercana a pobres y enfermos. Murió a los veinticuatro años.",""],
+["San Luis IX de Francia","S","1214 – 1270","Rey justo y piadoso. Murió en Túnez durante una cruzada.",""],
+["San Buenaventura","S","1221 – 1274","Franciscano, ministro general de su orden y Doctor de la Iglesia, llamado el «Doctor Seráfico».",""],
+["Santo Tomás de Aquino","S","1225 – 1274","Dominico italiano, el «Doctor Angélico». Su Suma Teológica sigue siendo una referencia del pensamiento cristiano.",""],
+["Santa Brígida de Suecia","S","c. 1303 – 1373","Noble sueca, madre de ocho hijos, mística y fundadora de las brigidinas. Copatrona de Europa.",""],
+["Santa Catalina de Siena","S","1347 – 1380","Terciaria dominica, mística y diplomática. Convenció al Papa de regresar de Aviñón a Roma. Doctora de la Iglesia.","Sed lo que Dios quiere que seáis y prenderéis fuego al mundo entero."],
+["Santa Rita de Casia","S","1381 – 1457","Esposa, madre, viuda y por último monja agustina. Invocada como patrona de los imposibles.",""],
+["Santa Juana de Arco","S","c. 1412 – 1431","Campesina que lideró al ejército francés en la guerra de los Cien Años. Fue condenada y quemada en Ruan a los diecinueve años.","Si no estoy en gracia, que Dios me ponga en ella; y si estoy, que Dios me guarde en ella."],
+["San Juan de Ávila","S","1499 – 1569","Apóstol de Andalucía y Doctor de la Iglesia. Maestro de santos y reformador del clero.",""],
+["San Tomás Moro","S","1478 – 1535","Jurista, humanista y canciller de Inglaterra. Fue decapitado por no aprobar la ruptura de Enrique VIII con Roma.","Muero siendo buen servidor del rey, pero primero de Dios."],
+["San Ignacio de Loyola","S","1491 – 1556","Soldado vasco herido en Pamplona, convertido durante su convalecencia. Fundó la Compañía de Jesús y escribió los Ejercicios Espirituales.","Para mayor gloria de Dios."],
+["San Juan de Dios","S","1495 – 1550","Soldado portugués convertido. Fundó un hospital en Granada y la orden hospitalaria que lleva su nombre.",""],
+["Santa Teresa de Jesús","S","1515 – 1582","Carmelita de Ávila, reformadora, escritora y mística. Doctora de la Iglesia.","Nada te turbe, nada te espante; quien a Dios tiene nada le falta."],
+["San Felipe Neri","S","1515 – 1595","Apóstol de Roma, fundador del Oratorio. Célebre por su alegría y su sentido del humor.",""],
+["San Francisco Javier","S","1506 – 1552","Cofundador de los jesuitas. Misionero en la India, Malaca y Japón. Patrono de las misiones.",""],
+["San Juan de la Cruz","S","1542 – 1591","Carmelita y poeta místico. Doctor de la Iglesia; escribió la Noche oscura y el Cántico espiritual.","En el atardecer de la vida te examinarán en el amor."],
+["San Camilo de Lelis","S","1550 – 1614","Antiguo soldado y jugador. Fundó una orden dedicada al cuidado de los enfermos.",""],
+["San Toribio de Mogrovejo","S","1538 – 1606","Arzobispo de Lima. Recorrió a pie su inmensa diócesis, convocó concilios y defendió a los indígenas.",""],
+["San Francisco Solano","S","1549 – 1610","Franciscano español, apóstol del Perú y del Tucumán. Músico y misionero incansable.",""],
+["San Francisco de Sales","S","1567 – 1622","Obispo de Ginebra y Doctor de la Iglesia. Enseñó que la santidad es posible en la vida cotidiana.","Nada por la fuerza, todo por amor."],
+["San Luis Gonzaga","S","1568 – 1591","Joven jesuita italiano. Murió a los veintitrés años por contagio al atender a enfermos de peste. Patrono de la juventud.",""],
+["San Roque González de Santa Cruz","S","1576 – 1628","Jesuita paraguayo, fundador de reducciones guaraníes. Murió mártir.",""],
+["San Martín de Porres","S","1579 – 1639","Mulato peruano, hermano dominico en Lima. Atendía a enfermos y a pobres de todas las razas. Patrono de la justicia social.",""],
+["San Pedro Claver","S","1580 – 1654","Jesuita catalán, «esclavo de los esclavos». Atendió a miles de africanos llegados a Cartagena de Indias.",""],
+["San Vicente de Paúl","S","1581 – 1660","Sacerdote francés, apóstol de la caridad. Fundó los Paúles y las Hijas de la Caridad.","Amemos a Dios, hermanos, amemos a Dios, pero que sea a costa de nuestros brazos."],
+["San Juan Macías","S","1585 – 1645","Hermano dominico español, portero del convento de Lima y generoso con los pobres.",""],
+["Santa Rosa de Lima","S","1586 – 1617","Primera santa de América. Terciaria dominica de vida austera y de intensa oración.",""],
+["Santa Mariana de Jesús","S","1618 – 1645","La «Azucena de Quito». Laica ecuatoriana de vida penitente y caritativa.",""],
+["Santa Kateri Tekakwitha","S","1656 – 1680","Joven mohawk-algonquina convertida al cristianismo, llamada «el lirio de los mohawks». Primera santa indígena de Norteamérica.",""],
+["San Juan Bautista de La Salle","S","1651 – 1719","Fundador de los Hermanos de las Escuelas Cristianas. Patrono de los educadores.",""],
+["San Alfonso María de Ligorio","S","1696 – 1787","Fundador de los redentoristas, Doctor de la Iglesia y gran moralista.",""],
+["Santa Mama Antula","S","1730 – 1799","Laica argentina que mantuvo viva la práctica de los Ejercicios Espirituales de san Ignacio tras la expulsión de los jesuitas. Primera santa argentina.",""],
+["San Junípero Serra","S","1713 – 1784","Franciscano mallorquín que fundó misiones en California.",""],
+["Santa Elizabeth Ann Seton","S","1774 – 1821","Primera santa nacida en Estados Unidos. Madre viuda que fundó escuelas católicas.",""],
+["San Juan María Vianney","S","1786 – 1859","El Cura de Ars. Pasaba hasta dieciséis horas al día en el confesionario. Patrono de los párrocos.","El hombre es un pobre que necesita pedirlo todo a Dios."],
+["San Antonio María Claret","S","1807 – 1870","Misionero catalán, fundador de los claretianos y arzobispo de Santiago de Cuba.",""],
+["San Juan Bosco","S","1815 – 1888","Sacerdote de Turín, educador de jóvenes pobres. Fundó los salesianos.","Basta que seáis jóvenes para que yo os ame."],
+["San Andrés Kim Taegon","S","1821 – 1846","Primer sacerdote coreano. Murió mártir a los veinticinco años.",""],
+["San Charbel Makhlouf","S","1828 – 1898","Monje y ermitaño maronita del Líbano.",""],
+["San José Gabriel del Rosario Brochero","S","1840 – 1914","El cura gaucho de Córdoba, Argentina. Recorría las sierras en mula para llevar los sacramentos y construyó caminos y escuelas.",""],
+["San Damián de Veuster","S","1840 – 1889","Misionero belga que vivió y murió entre los enfermos de lepra de Molokai, Hawái.",""],
+["San Bartolo Longo","S","1841 – 1926","Abogado italiano que se alejó de la fe y regresó. Fundó el santuario de Pompeya y obras para huérfanos.",""],
+["Santo Domingo Savio","S","1842 – 1857","Alumno de don Bosco. Murió a los quince años, con fama de profunda vida interior.","Antes morir que pecar."],
+["Santa Bernardita Soubirous","S","1844 – 1879","Pastora de Lourdes, vidente de la Virgen en 1858. Vivió después como religiosa sencilla y enferma.",""],
+["Santa Ángela de la Cruz","S","1846 – 1932","Sevillana, «madre de los pobres». Fundó las Hermanas de la Cruz.",""],
+["Santa Francisca Javier Cabrini","S","1850 – 1917","Italiana que fundó las Misioneras del Sagrado Corazón y atendió a inmigrantes en América. Patrona de los inmigrantes.",""],
+["San Carlos de Foucauld","S","1858 – 1916","Militar y explorador convertido. Vivió entre los tuaregs del Sáhara como «hermano universal». Fue asesinado en Tamanrasset.","Hay que gritar el Evangelio con la vida."],
+["Santa Katharine Drexel","S","1858 – 1955","Heredera millonaria de Filadelfia que dedicó su fortuna y su vida a las comunidades afroamericanas e indígenas.",""],
+["Santa Teresa de Lisieux","S","1873 – 1897","Carmelita francesa muerta a los veinticuatro años. Su «caminito» de confianza y amor la hizo Doctora de la Iglesia.","En el corazón de la Iglesia, mi madre, yo seré el amor."],
+["Santa Laura Montoya","S","1874 – 1949","La Madre Laura, fundadora de las Misioneras de la Inmaculada Concepción. Apóstol de los indígenas de Colombia.",""],
+["San Manuel González García","S","1877 – 1940","Obispo de Palencia, llamado «el obispo del Sagrario abandonado».",""],
+["San Rafael Guízar y Valencia","S","1878 – 1938","Obispo de Veracruz. Perseguido durante la Revolución mexicana, recorría su diócesis disfrazado de vendedor ambulante.",""],
+["San Juan XXIII","S","1881 – 1963","El «Papa bueno». Convocó el Concilio Vaticano II.","Ver mucho, pasar por alto mucho, corregir poco."],
+["San Titus Brandsma","S","1881 – 1942","Carmelita neerlandés, periodista y profesor. Se opuso al nazismo y murió en Dachau.",""],
+["San Pío de Pietrelcina","S","1887 – 1968","El Padre Pío. Capuchino italiano, confesor y místico.","Reza, espera y no te preocupes."],
+["Santa Teresa Benedicta de la Cruz","S","1891 – 1942","Edith Stein: filósofa judía convertida, carmelita. Murió en Auschwitz.",""],
+["San Maximiliano Kolbe","S","1894 – 1941","Franciscano conventual polaco. Se ofreció a morir en Auschwitz en lugar de un padre de familia.",""],
+["San Pablo VI","S","1897 – 1978","Papa que clausuró el Concilio Vaticano II y llevó adelante sus reformas.",""],
+["Santa Maravillas de Jesús","S","1891 – 1974","Carmelita descalza madrileña, reformadora y fundadora de monasterios.",""],
+["San Alberto Hurtado","S","1901 – 1952","Jesuita chileno, fundador del Hogar de Cristo para los más pobres.","Contento, Señor, contento."],
+["San Pier Giorgio Frassati","S","1901 – 1925","Joven turinés, alpinista y amigo de los pobres. Murió de poliomielitis a los veinticuatro años.","Vivir sin fe, sin una herencia que defender, sin una lucha constante por la verdad, no es vivir, sino ir tirando."],
+["San Josemaría Escrivá","S","1902 – 1975","Sacerdote español, fundador del Opus Dei. Enseñó que el trabajo ordinario es camino de santidad.",""],
+["Santa Teresa de los Andes","S","1900 – 1920","Juanita Fernández Solar, carmelita chilena muerta a los diecinueve años. Primera santa de Chile.",""],
+["Santa Faustina Kowalska","S","1905 – 1938","Religiosa polaca, apóstol de la Divina Misericordia.","Jesús, en ti confío."],
+["San Rafael Arnáiz Barón","S","1911 – 1938","Joven trapense español, estudiante de arquitectura. Vivió su enfermedad como camino de oración.",""],
+["Santa Josefina Bakhita","S","c. 1869 – 1947","Nacida en Darfur, esclavizada de niña y liberada en Italia. Se hizo religiosa canosiana.",""],
+["Santa Teresa de Calcuta","S","1910 – 1997","Misionera de la Caridad, fundadora de las Misioneras de la Caridad. Sirvió a los más pobres entre los pobres en la India.","No todos podemos hacer cosas grandes, pero sí cosas pequeñas con gran amor."],
+["San José Sánchez del Río","S","1913 – 1928","Niño mexicano mártir durante la Guerra Cristera, ejecutado a los catorce años.","Nunca fue tan fácil ganar el cielo como ahora."],
+["San Pedro To Rot","S","1912 – 1945","Catequista de Papúa Nueva Guinea. Murió mártir durante la ocupación japonesa.",""],
+["San Óscar Romero","S","1917 – 1980","Arzobispo de San Salvador, voz de los sin voz. Fue asesinado mientras celebraba misa.","Si me matan, resucitaré en el pueblo salvadoreño."],
+["San Juan Pablo II","S","1920 – 2005","El Papa polaco de más de veintiséis años de pontificado. Viajó por todo el mundo y convocó a los jóvenes.","¡No tengáis miedo! ¡Abrid de par en par las puertas a Cristo!"],
+["San José Gregorio Hernández","S","1864 – 1919","Médico y científico venezolano, conocido como el «médico de los pobres». Canonizado en octubre de 2025, es uno de los dos primeros santos de Venezuela.",""],
+["Santa Gianna Beretta Molla","S","1922 – 1962","Pediatra y madre italiana que eligió continuar su embarazo a riesgo de su propia vida.",""],
+["Santos Francisco y Jacinta Marto","S","1908 – 1919 y 1910 – 1920","Pastorcitos de Fátima, videntes en 1917. Murieron de la gripe española siendo niños.",""],
+["San Carlo Acutis","S","1991 – 2006","Adolescente italiano aficionado a la informática. Usó la web para difundir milagros eucarísticos. Murió de leucemia a los quince años.","La Eucaristía es mi autopista al cielo."],
+
+["Santa Carmen Rendiles","S","1903 – 1977","La Madre Carmen Rendiles, caraqueña, fundó la Congregación de las Siervas de Jesús. Canonizada en octubre de 2025 junto a José Gregorio Hernández: son los dos primeros santos de Venezuela.",""],
+["Santa María Troncatti","S","1883 – 1969","Enfermera italiana de la Cruz Roja y religiosa salesiana. Misionera en la Amazonía de Ecuador, trabajó con el pueblo shuar y por la reconciliación entre colonos e indígenas. Canonizada en octubre de 2025.",""],
+["Santa Dulce de los Pobres","S","1914 – 1992","Hermana Dulce, religiosa de Salvador de Bahía, en Brasil, llamada «el ángel bueno de Bahía». Fundó obras de salud y asistencia para los más pobres.",""],
+["San Antonio de Santa Ana Galvão","S","1739 – 1822","Fray Galvão, franciscano de São Paulo. Primer santo nacido en Brasil.",""],
+["Santa Paulina del Corazón Agonizante de Jesús","S","1865 – 1942","Italiana llegada a Brasil de niña. Fundó las Hermanitas de la Inmaculada Concepción y atendió a enfermos y a antiguos esclavos. Primera santa del Brasil.",""],
+["San Pedro de San José de Betancur","S","1626 – 1667","El Hermano Pedro, nacido en Tenerife y apóstol de Guatemala. Fundó un hospital de convalecientes y obras para los pobres.",""],
+["San Luis Beltrán","S","1526 – 1581","Dominico valenciano, misionero en Cartagena de Indias y el Caribe colombiano. Defendió a los indígenas.",""],
+["San Miguel Febres Cordero","S","1854 – 1910","Hermano de las Escuelas Cristianas nacido en Cuenca, Ecuador. Educador, escritor y lingüista.",""],
+["Santa Narcisa de Jesús","S","1832 – 1869","Laica ecuatoriana, costurera, de vida de oración y penitencia. Murió en Lima.",""],
+["San Felipe de Jesús","S","1572 – 1597","Primer santo mexicano. Franciscano nacido en Ciudad de México y martirizado en Nagasaki.",""],
+["San Cristóbal Magallanes y compañeros mártires","S","1869 – 1927","Sacerdote jalisciense, uno de los veinticinco mártires de la persecución religiosa en México.","Yo muero inocente, y pido a Dios que mi sangre sirva para la unión de los mexicanos."],
+["Santos niños mártires de Tlaxcala","S","m. 1527 y 1529","Cristóbal, Antonio y Juan, tres jóvenes indígenas asesinados por su fe. Están entre los primeros mártires de América.",""],
+["San Andrés","S","siglo I","Pescador de Galilea, hermano de Pedro y primer discípulo llamado por Jesús. La tradición lo hace mártir en Patras.","Hemos encontrado al Mesías."],
+["San Juan Evangelista","S","siglo I","El discípulo amado. Apóstol, autor del cuarto Evangelio y único de los Doce al pie de la cruz.","Dios es amor."],
+["Santo Tomás Apóstol","S","siglo I","El apóstol que dudó hasta ver al Resucitado. La tradición lo lleva a evangelizar la India.","¡Señor mío y Dios mío!"],
+["Santiago el Mayor","S","m. c. 44","Apóstol, hermano de san Juan y primer apóstol mártir. Patrono de España; su tumba es meta del Camino de Santiago.",""],
+["San Felipe Apóstol","S","siglo I","Apóstol de Betsaida que llevó a Natanael hasta Jesús.","Ven y verás."],
+["San Bartolomé","S","siglo I","Apóstol, identificado tradicionalmente con Natanael, el «israelita sin doblez».",""],
+["San Mateo","S","siglo I","Recaudador de impuestos que dejó su mesa para seguir a Jesús. La tradición le atribuye el primer Evangelio.",""],
+["San Simón el Zelote","S","siglo I","Apóstol de Jesús. La tradición lo vincula con la evangelización de Persia junto a san Judas Tadeo.",""],
+["San Matías","S","siglo I","Elegido para ocupar entre los Doce el lugar de Judas.",""],
+["San Bernabé","S","siglo I","Levita de Chipre, llamado «hijo del consuelo». Acompañó a san Pablo en su primer viaje misionero.",""],
+["San Lucas","S","siglo I","Médico, compañero de san Pablo y autor del tercer Evangelio y de los Hechos de los Apóstoles.",""],
+["San Marcos","S","siglo I","Evangelista, intérprete de san Pedro. La tradición lo hace fundador de la Iglesia de Alejandría.",""],
+["Santos Inocentes","S","c. 4 a. C.","Los niños de Belén muertos por orden de Herodes. La Iglesia los venera como mártires.",""],
+["San Vicente de Zaragoza","S","m. 304","Diácono martirizado en Valencia bajo Diocleciano. Muy venerado en España y Portugal.",""],
+["San Fabián","S","m. 250","Papa y mártir del siglo III, muerto bajo el emperador Decio.",""],
+["Santa Inés","S","c. 291 – c. 304","Niña romana de unos doce o trece años, mártir. Patrona de las jóvenes.",""],
+["Santa Felicidad","S","m. 203","Esclava mártir de Cartago, ejecutada junto a santa Perpetua.",""],
+["Santos Cosme y Damián","S","m. c. 287","Hermanos médicos que atendían sin cobrar. Mártires; patronos de médicos y farmacéuticos.",""],
+["Santos Juan y Pablo","S","m. c. 362","Hermanos mártires romanos. Su basílica se alza sobre el monte Celio.",""],
+["Santos Gervasio y Protasio","S","siglo II","Hermanos mártires de Milán, cuyas reliquias halló san Ambrosio en el año 386.",""],
+["San Atanasio","S","c. 296 – 373","Obispo de Alejandría y Doctor de la Iglesia. Defendió la divinidad de Cristo frente al arrianismo.",""],
+["San Cirilo y San Metodio","S","c. 826 – 869 y c. 815 – 885","Hermanos misioneros, apóstoles de los eslavos y copatronos de Europa. Crearon un alfabeto para traducir la Biblia.",""],
+["San Bonifacio","S","c. 675 – 754","Monje inglés, apóstol de Germania. Murió mártir en Frisia.",""],
+["San Francisco de Paula","S","1416 – 1507","Ermitaño calabrés, fundador de los Mínimos. Aconsejó a reyes y a pobres por igual.",""],
+["San Estanislao de Kostka","S","1550 – 1568","Joven jesuita polaco, muerto a los diecisiete años. Patrono de la juventud.",""],
+["Santa Margarita María Alacoque","S","1647 – 1690","Religiosa visitandina francesa. Difundió la devoción al Sagrado Corazón de Jesús.",""],
+["Santa Gema Galgani","S","1878 – 1903","Joven mística italiana de Lucca, muerta a los veinticinco años.",""],
+["San Leopoldo Mandić","S","1866 – 1942","Capuchino croata en Padua. Pasó décadas confesando durante horas cada día.",""],
+["San Pablo Miki y compañeros","S","1562 – 1597","Veintiséis mártires crucificados en Nagasaki, entre jesuitas, franciscanos y laicos, entre ellos tres niños.",""],
+["San Carlos Lwanga y compañeros","S","c. 1860 – 1886","Jóvenes pajes de la corte de Uganda, quemados vivos por negarse a renunciar a su fe. Patronos de la juventud africana.",""],
+
+/* ===== Beatos ===== */
+["Beato Fra Angelico","B","c. 1395 – 1455","Fraile dominico y pintor renacentista. Sus frescos del convento de San Marcos, en Florencia, son célebres.",""],
+["Beato Juan Duns Escoto","B","c. 1266 – 1308","Franciscano escocés, el «Doctor Sutil». Defensor teológico de la Inmaculada Concepción.",""],
+["Beata Imelda Lambertini","B","1322 – 1333","Niña dominica de Bolonia, ligada a la Eucaristía. Patrona de los niños que hacen su primera comunión.",""],
+["Beata Concepción Cabrera de Armida","B","1862 – 1937","«Conchita», laica mexicana, esposa, madre de nueve hijos y escritora espiritual.",""],
+["Beato Solanus Casey","B","1870 – 1957","Capuchino estadounidense, portero en Detroit durante décadas y consejero de miles de personas.","Dar gracias a Dios por adelantado."],
+["Beata Alexandrina da Costa","B","1904 – 1955","Laica portuguesa paralítica desde joven, que ofreció su sufrimiento por los pecadores.",""],
+["Beato Carlos de Habsburgo","B","1887 – 1922","Último emperador de Austria-Hungría. Buscó la paz durante la Primera Guerra Mundial.",""],
+["Beato Miguel Agustín Pro","B","1891 – 1927","Jesuita mexicano ejecutado durante la persecución religiosa de los años veinte.","¡Viva Cristo Rey!"],
+["Beato Mamerto Esquiú","B","1826 – 1883","Franciscano y obispo de Córdoba, gran orador y figura patriótica argentina.",""],
+["Beata Laura Vicuña","B","1891 – 1904","Niña chilena, alumna salesiana en Argentina. Ofreció su vida por su madre.",""],
+["Beato Ceferino Namuncurá","B","1886 – 1905","Joven mapuche, hijo de un cacique, que quiso ser sacerdote salesiano. Murió de tuberculosis en Roma.",""],
+["Beato Franz Jägerstätter","B","1907 – 1943","Campesino austriaco que se negó a jurar fidelidad a Hitler y fue decapitado.",""],
+["Beato Clemens August von Galen","B","1878 – 1946","Obispo de Münster, el «León de Münster», que denunció públicamente el programa nazi de eutanasia.",""],
+["Beato Juan Pablo I","B","1912 – 1978","Papa durante apenas treinta y tres días en 1978. Conocido como «el Papa de la sonrisa».","Dios es papá; más aún, es madre."],
+["Beato Marcel Callo","B","1921 – 1945","Joven obrero francés de la Juventud Obrera Cristiana, deportado a Alemania. Murió en Mauthausen a los veintitrés años.",""],
+["Beato Rolando Rivi","B","1931 – 1945","Seminarista italiano de catorce años, asesinado por vestir su sotana.",""],
+["Beato Stefan Wyszyński","B","1901 – 1981","Cardenal primado de Polonia. Encarcelado por el régimen comunista y guía de la Iglesia polaca.",""],
+["Beato Carlos Manuel Rodríguez","B","1918 – 1963","Laico puertorriqueño, apóstol de la liturgia y de la Biblia.",""],
+["Beato Stanley Rother","B","1935 – 1981","Sacerdote de Oklahoma, misionero en Guatemala. Fue asesinado en su parroquia.","El pastor no puede huir ante el primer signo de peligro."],
+["Beato Rutilio Grande","B","1928 – 1977","Jesuita salvadoreño asesinado junto a dos laicos. Su muerte marcó a Óscar Romero.",""],
+["Beato Enrique Angelelli","B","1923 – 1976","Obispo de La Rioja, Argentina, asesinado durante la dictadura.",""],
+["Beato Eduardo Pironio","B","1920 – 1998","Cardenal argentino, presidente del CELAM. Maestro de esperanza.",""],
+["Beato Jerzy Popiełuszko","B","1947 – 1984","Sacerdote polaco, capellán de Solidaridad. Fue asesinado por la policía secreta comunista.","Vence el mal con el bien."],
+["Beato Pino Puglisi","B","1937 – 1993","Párroco de un barrio de Palermo, asesinado por la mafia por educar a los jóvenes.","Si cada uno hace algo, se puede hacer mucho."],
+["Beato Rosario Livatino","B","1952 – 1990","Joven juez siciliano asesinado por la mafia por su integridad.",""],
+["Beata Chiara Luce Badano","B","1971 – 1990","Adolescente italiana del Movimiento de los Focolares. Murió de cáncer a los dieciocho años.","Si tú lo quieres, Jesús, yo también lo quiero."],
+["Beato Álvaro del Portillo","B","1914 – 1994","Primer sucesor de Josemaría Escrivá al frente del Opus Dei.",""],
+["Beato Jan Franciszek Macha","B","1914 – 1942","Joven silesiano ejecutado por los nazis a los veintisiete años.",""],
+["Beato Floribert Bwana Chui","B","1981 – 2007","Joven funcionario de aduanas en Goma, Congo. Fue asesinado por negarse a dejar pasar alimentos en mal estado.",""],
+
+["Beato Fulton Sheen","B","1895 – 1979","Arzobispo estadounidense, pionero del Evangelio por radio y televisión. Beatificado el 24 de septiembre de 2026 en San Luis, Misuri.",""],
+["Beato Nazareno Lanciotti","B","1940 – 2001","Sacerdote romano, misionero en Jauru (Mato Grosso, Brasil). Fundó parroquia, escuelas y obras de salud, y denunció la explotación de menores y el narcotráfico. Fue asesinado en 2001 y beatificado el 13 de junio de 2026.",""],
+["Beato Francisco Javier Trương Bửu Diệp","B","1897 – 1946","Párroco vietnamita de Tắc Sậy. Fue asesinado al entregar su vida a cambio de unas setenta personas detenidas. Su beatificación, el 2 de julio de 2026, fue la primera celebrada en suelo vietnamita.",""],
+["Beato José Olallo Valdés","B","1820 – 1889","Hermano hospitalario de San Juan de Dios en Camagüey, Cuba. Atendió a enfermos y a heridos de guerra sin distinguir bandos.",""],
+
+/* ===== Venerables ===== */
+["Venerable Matt Talbot","V","1856 – 1925","Obrero de Dublín, alcohólico convertido. Vivió sobrio y penitente; es un referente para quienes luchan contra las adicciones.",""],
+["Venerable Pierre Toussaint","V","1766 – 1853","Esclavo haitiano llevado a Nueva York. Fue peluquero y benefactor de huérfanos y enfermos.",""],
+["Venerable Henriette Delille","V","1812 – 1862","Mujer libre de color de Nueva Orleans. Fundó las Hermanas de la Sagrada Familia para servir a los esclavos.",""],
+["Venerable Augustus Tolton","V","1854 – 1897","Nacido esclavo en Misuri, primer sacerdote afroamericano de Estados Unidos reconocido públicamente.",""],
+["Venerable Mamá Margarita","V","1788 – 1856","Margarita Occhiena, madre de san Juan Bosco. Educó a sus hijos en la pobreza y colaboró en su obra.",""],
+["Venerable Antoni Gaudí","V","1852 – 1926","Arquitecto de la Sagrada Familia y de toda una obra inspirada en la naturaleza y en la fe.","La originalidad consiste en volver al origen."],
+["Venerable Edel Quinn","V","1907 – 1944","Joven irlandesa, legionaria de María en África oriental pese a su tuberculosis.",""],
+["Venerable Pío XII","V","1876 – 1958","Papa durante la Segunda Guerra Mundial y la posguerra.","El mayor pecado de este siglo es la pérdida del sentido del pecado."],
+["Venerable Patrick Peyton","V","1909 – 1992","Sacerdote irlandés-estadounidense, apóstol del rosario en familia por radio, cine y televisión.","La familia que reza unida permanece unida."],
+["Venerable Madeleine Delbrêl","V","1904 – 1964","Trabajadora social y mística francesa. Vivió su fe en un barrio obrero de Ivry.",""],
+["Venerable Marthe Robin","V","1902 – 1981","Mística francesa, inspiradora de los Hogares de Caridad.",""],
+["Venerable Giorgio La Pira","V","1904 – 1977","Alcalde de Florencia, jurista y «profeta de la paz».",""],
+["Venerable József Mindszenty","V","1892 – 1975","Cardenal húngaro, encarcelado por regímenes nazi y comunista. Vivió quince años refugiado en una embajada.",""],
+["Venerable François-Xavier Nguyen Van Thuan","V","1928 – 2002","Cardenal vietnamita. Pasó trece años preso, nueve de ellos en aislamiento, bajo el régimen comunista.","Elijo a Dios, no las obras de Dios."],
+
+["Venerable Enrique Shaw","V","1921 – 1962","Empresario argentino, fundador de la ACDE e impulsor de la Universidad Católica Argentina. Murió a los cuarenta y un años. Se aprobó un milagro por su intercesión y se espera la fecha de su beatificación.",""],
+["Venerable Fray Augusto Ramírez Monasterio","V","1937 – 1983","Franciscano guatemalteco asesinado por guardar el secreto de confesión. Su martirio fue reconocido en enero de 2026 y su beatificación está prevista para el 7 de noviembre de 2026.",""],
+["Venerables Alejandro Labaka e Inés Arango","V","1920 – 1987 y 1937 – 1987","Obispo capuchino español y religiosa colombiana, asesinados en la Amazonía ecuatoriana por indígenas tagaeri, a quienes intentaban acercarse en paz para protegerlos.",""],
+["Venerable Friedrich Kaiser Depel","V","1903 – 1993","Misionero alemán del Sagrado Corazón y primer prelado de Caravelí, en Perú. Pionero del apostolado bíblico en el país. Declarado venerable en octubre de 2026.",""],
+["Venerable Margarita Bavosi","V","1941 – 1985","«Luminosa», laica consagrada argentina del Movimiento de los Focolares. Murió a los cuarenta y tres años. Declarada venerable en octubre de 2026.",""],
+["Venerable Bárbara Samulowska","V","1865 – 1950","Vidente de las apariciones marianas de Gietrzwałd, en Polonia, y luego religiosa. Murió en Guatemala.",""],
+["Venerable Júlio Maria de Lombaerde","V","1878 – 1944","Misionero belga de la Sagrada Familia, fundador de congregaciones sacramentinas. Murió en Minas Gerais, Brasil.",""],
+["Venerable María Inmaculada de la Santísima Trinidad","V","1909 – 1988","Carmelita descalza, fundadora del monasterio de Pouso Alegre, en Brasil.",""],
+
+/* ===== Siervos de Dios (causa abierta) ===== */
+["Sierva de Dios Dorothy Day","D","1897 – 1980","Periodista estadounidense convertida, cofundadora del Catholic Worker, defensora de los pobres y de la paz.","No me llames santa; no quiero que me descarten tan fácilmente."],
+["Siervo de Dios Alce Negro","D","1863 – 1950","Black Elk, líder espiritual lakota oglala y catequista católico en Dakota del Sur.",""],
+["Siervo de Dios Pedro Arrupe","D","1907 – 1991","Superior general de los jesuitas y fundador del Servicio Jesuita a Refugiados.","Nada es más práctico que encontrar a Dios, es decir, enamorarse de Él de una manera definitiva y absoluta."],
+["Siervo de Dios Hélder Câmara","D","1909 – 1999","Arzobispo de Olinda y Recife, voz de los pobres del Brasil.","Cuando doy de comer a los pobres me llaman santo; cuando pregunto por qué no tienen comida, me llaman comunista."],
+["Siervo de Dios Jérôme Lejeune","D","1926 – 1994","Genetista francés que descubrió la trisomía 21 y defendió la vida del no nacido.","La calidad de una civilización se mide por el respeto que muestra hacia sus miembros más débiles."],
+["Sierva de Dios Chiara Corbella Petrillo","D","1984 – 2012","Joven madre italiana. Pospuso su tratamiento contra el cáncer para proteger la vida de su hijo.",""],
+["Sierva de Dios Chiara Lubich","D","1920 – 2008","Fundadora del Movimiento de los Focolares, impulsora de la unidad y del diálogo.",""],
+["Sierva de Dios Satoko Kitahara","D","1929 – 1958","Joven japonesa convertida que vivió entre los traperos de Tokio. Murió de tuberculosis a los veintinueve años.",""],
+["Sierva de Dios Thea Bowman","D","1937 – 1990","Religiosa franciscana afroamericana, educadora y cantante de espirituales. Llevó la cultura negra al corazón de la Iglesia.",""],
+["Sierva de Dios Elupina Cordero","D","1892 – 1939","Laica dominicana que quedó ciega a los doce años. Fundó una capilla y un asilo para niños huérfanos. Su causa se abrió en 2026.",""]
+];
+
+
+/* ---------- Grupos ---------- */
+const CATS = {
+  S:{plural:"Santos"},
+  B:{plural:"Beatos"},
+  V:{plural:"Venerables"},
+  D:{plural:"Siervos de Dios"}
+};
+const CAT_ORDER = ["S","B","V","D"];
+const LIT = new Set([
+  "San José","San Juan Bautista","San Pedro","San Pablo","San Andrés","San Juan Evangelista","Santo Tomás Apóstol",
+  "Santiago el Mayor","San Felipe Apóstol","San Bartolomé","San Mateo","San Simón el Zelote","San Judas Tadeo",
+  "San Matías","San Bernabé","San Lucas","San Marcos","Santos Inocentes","San Esteban","San Ignacio de Antioquía",
+  "San Lorenzo","San Vicente de Zaragoza","San Fabián","San Sebastián","Santos Juan y Pablo","Santos Cosme y Damián",
+  "Santos Gervasio y Protasio","San Gregorio Magno","San Ambrosio de Milán","San Agustín de Hipona","San Jerónimo",
+  "San Martín de Tours","San Nicolás de Bari","San Antonio Abad","San Atanasio","San Basilio Magno","San Benito de Nursia",
+  "San Bernardo de Claraval","Santo Domingo de Guzmán","San Francisco de Asís","San Francisco Javier","San Ignacio de Loyola",
+  "San Juan María Vianney","Santa María Magdalena","Santa Águeda","Santa Lucía","Santa Inés","Santa Cecilia",
+  "Santa Perpetua","Santa Felicidad","Santa Catalina de Siena","Santa Teresa de Jesús"
+]);
+const items = SAINTS.map(r => ({name:r[0], cat:r[1], years:r[2], desc:r[3], quote:r[4], lit:LIT.has(r[0])}));
+
+function stateLabel(it){
+  const plural = /^Santos\b/.test(it.name);
+  const fem = /^(Santa|Beata|Sierva)\b/.test(it.name);
+  if(it.cat==="S") return plural ? "Canonizados" : fem ? "Canonizada" : "Canonizado";
+  if(it.cat==="B") return fem ? "Beatificada" : "Beatificado";
+  if(it.cat==="V") return /^Venerables\b/.test(it.name) ? "Venerables" : "Venerable";
+  return "Causa abierta";
+}
+
+/* ---------- Utilidades ---------- */
+const $ = id => document.getElementById(id);
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function rnd(n){
+  if(window.crypto && crypto.getRandomValues){
+    const a = new Uint32Array(1), lim = Math.floor(4294967296/n)*n; let x;
+    do{ crypto.getRandomValues(a); x = a[0]; }while(x>=lim);
+    return x % n;
+  }
+  return Math.floor(Math.random()*n);
+}
+const isPlural = n => /^(Santos|Venerables)\b|\by compañeros\b|\bSan Cirilo y San Metodio\b/.test(n);
+const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+
+const now = new Date();
+const drawYear = now.getMonth() >= 9 ? now.getFullYear()+1 : now.getFullYear();
+$("lede").textContent = "Confía en la Providencia: ella sabe qué compañero de camino necesitas para " + drawYear + ".";
+
+/* ---------- Estado ---------- */
+let active = {S:true,B:true,V:true,D:true};
+let onlyLit = false;
+let pool = items.slice();
+const poolFor = (act, lit) => items.filter(i => act[i.cat] && (!lit || i.lit));
+let drawn = [];
+let current = null;
+let busy = false;
+const STORE = "santo-del-anio:v2";
+
+function loadStore(){
+  try{
+    const raw = localStorage.getItem(STORE);
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    if(d && Array.isArray(d.hist)) drawn = d.hist.filter(n => items.some(i => i.name===n)).slice(0,30);
+  }catch(e){}
+}
+function saveStore(){
+  try{ localStorage.setItem(STORE, JSON.stringify({hist:drawn})); }catch(e){}
+}
+function rebuildPool(){
+  pool = poolFor(active, onlyLit);
+  $("poolNote").textContent = "Entre " + pool.length + " nombres.";
+}
+
+/* ---------- Filtros ---------- */
+function buildFilters(){
+  const wrap = $("filters"); wrap.textContent = "";
+  CAT_ORDER.forEach(c => {
+    const n = items.filter(i => i.cat===c).length;
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip";
+    b.setAttribute("aria-pressed", active[c] ? "true" : "false");
+    b.textContent = CATS[c].plural + " (" + n + ")";
+    b.addEventListener("click", () => {
+      if(busy) return;
+      const next = !active[c];
+      const test = Object.assign({}, active, {[c]: next});
+      if(!poolFor(test, onlyLit).length) return;
+      active = test;
+      b.setAttribute("aria-pressed", next ? "true" : "false");
+      rebuildPool();
+    });
+    wrap.appendChild(b);
+  });
+  const nl = items.filter(i => i.lit).length;
+  const lb = document.createElement("button");
+  lb.type = "button"; lb.className = "chip";
+  lb.setAttribute("aria-pressed", onlyLit ? "true" : "false");
+  lb.textContent = "Solo la Letanía de los santos (" + nl + ")";
+  lb.addEventListener("click", () => {
+    if(busy) return;
+    const next = !onlyLit;
+    if(!poolFor(active, next).length) return;
+    onlyLit = next;
+    lb.setAttribute("aria-pressed", next ? "true" : "false");
+    rebuildPool();
+  });
+  wrap.appendChild(lb);
+}
+function setBusy(v){
+  busy = v;
+  $("spin").disabled = v; $("again").disabled = v;
+  $("spin").textContent = v ? "Esperando…" : (current ? "Recibir otro" : "Recibir mi santo");
+  document.querySelectorAll(".chip").forEach(c => c.disabled = v);
+}
+
+/* ---------- Resultado ---------- */
+const res = $("result");
+let hideTimer = null;
+function showResult(it, animate){
+  current = it;
+  $("rState").textContent = stateLabel(it);
+  $("rName").textContent = it.name;
+  $("rYears").textContent = it.years;
+  $("rDesc").textContent = it.desc;
+  const pl = isPlural(it.name);
+  const rl = $("rLit");
+  if(it.lit){ rl.textContent = (pl ? "Se les invoca" : "Se le invoca") + " en la Letanía de los santos."; rl.hidden = false; } else { rl.hidden = true; }
+  $("rPray").textContent = (it.cat==="S" || it.cat==="B")
+    ? it.name + ", " + (pl ? "rueguen" : "ruega") + " por nosotros."
+    : "Su causa sigue abierta: puedes encomendarla en tu oración.";
+  const q = $("rQuote");
+  if(it.quote){ q.textContent = "«" + it.quote + "»"; q.hidden = false; } else { q.hidden = true; }
+  clearTimeout(hideTimer);
+  res.hidden = false;
+  res.classList.remove("show");
+  void res.offsetWidth;
+  requestAnimationFrame(() => res.classList.add("show"));
+  if(animate) res.scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"nearest"});
+}
+function hideResult(){
+  res.classList.remove("show");
+  hideTimer = setTimeout(() => { if(!res.classList.contains("show")) res.hidden = true; }, 320);
+}
+
+/* ---------- Historial ---------- */
+function renderHistory(){
+  const ul = $("history"); ul.textContent = "";
+  $("historyWrap").hidden = drawn.length === 0;
+  drawn.forEach(name => {
+    const it = items.find(i => i.name===name); if(!it) return;
+    const li = document.createElement("li");
+    const b = document.createElement("button"); b.type = "button"; b.className = "hist-btn";
+    b.textContent = it.name;
+    b.addEventListener("click", () => { if(!busy) showResult(it, true); });
+    li.appendChild(b); ul.appendChild(li);
+  });
+}
+$("clearHist").addEventListener("click", () => { drawn = []; saveStore(); renderHistory(); });
+
+/* ---------- Lista completa ---------- */
+function renderPool(filter){
+  const box = $("poolList"); box.textContent = "";
+  const f = norm(filter || "");
+  let total = 0;
+  CAT_ORDER.forEach(c => {
+    const list = items.filter(i => i.cat===c && (!f || norm(i.name).includes(f)));
+    if(!list.length) return;
+    total += list.length;
+    const h = document.createElement("h3"); h.textContent = CATS[c].plural + " (" + list.length + ")";
+    box.appendChild(h);
+    const ul = document.createElement("ul");
+    list.forEach(i => {
+      const li = document.createElement("li");
+      const a = document.createElement("span"); a.textContent = i.name;
+      const b = document.createElement("span"); b.textContent = i.years;
+      li.append(a, b); ul.appendChild(li);
+    });
+    box.appendChild(ul);
+  });
+  if(!total){ const p = document.createElement("p"); p.className = "empty"; p.textContent = "Ningún nombre coincide con la búsqueda."; box.appendChild(p); }
+}
+$("q").addEventListener("input", e => renderPool(e.target.value));
+
+/* ---------- Copiar ---------- */
+$("copy").addEventListener("click", async () => {
+  if(!current) return;
+  const txt = "Mi santo del año " + drawYear + ": " + current.name + " (" + current.years + ")." +
+              (current.quote ? " «" + current.quote + "»" : "");
+  const btn = $("copy");
+  let ok = false;
+  try{ await navigator.clipboard.writeText(txt); ok = true; }
+  catch(e){
+    try{
+      const ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.remove();
+    }catch(e2){}
+  }
+  btn.textContent = ok ? "Copiado" : "No se pudo copiar";
+  setTimeout(() => { btn.textContent = "Copiar"; }, 1600);
+});
+
+/* ---------- Cielo (canvas) ---------- */
+const cv = $("sky"), ctx = cv.getContext("2d");
+const S = 360, CX = 180, CY = 180, R = 172, NS = 150;
+let K = 1, rot = 0, spinRate = 0.03, targetRate = 0.03, boost = 1, targetBoost = 1, beam = 0, targetBeam = 0;
+let stars = [];
+
+function fit(){
+  const w = cv.clientWidth || 360;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.round(w*dpr); cv.height = Math.round(w*dpr);
+  K = cv.width / S;
+}
+function newStar(){
+  return {a:Math.random()*Math.PI*2, d:Math.sqrt(Math.random())*(R-14), size:0.7+Math.random()*1.7,
+          ph:Math.random()*6.28, sp:0.6+Math.random()*1.6, picked:false, alpha:1, x:0, y:0};
+}
+function makeStars(){ stars = []; for(let i=0;i<NS;i++) stars.push(newStar()); }
+function starPos(s){ return {x:CX+Math.cos(s.a+rot)*s.d, y:CY+Math.sin(s.a+rot)*s.d}; }
+
+function drawFourPoint(x, y, r, a){
+  ctx.globalAlpha = a;
+  ctx.strokeStyle = "#FFFFFF"; ctx.lineCap = "round"; ctx.lineWidth = Math.max(1, r*0.12);
+  ctx.beginPath();
+  ctx.moveTo(x, y - r*2.6); ctx.lineTo(x, y + r*2.6);
+  ctx.moveTo(x - r*1.7, y); ctx.lineTo(x + r*1.7, y);
+  ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, r*0.55, 0, Math.PI*2); ctx.fillStyle = "#FFFFFF"; ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function draw(t){
+  ctx.setTransform(K,0,0,K,0,0);
+  ctx.clearRect(0,0,S,S);
+  // cielo
+  const g = ctx.createRadialGradient(CX, CY-30, 20, CX, CY, R);
+  g.addColorStop(0, "#1B3A6B"); g.addColorStop(1, "#0F2548");
+  ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2); ctx.fillStyle = g; ctx.fill();
+  ctx.save();
+  ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2); ctx.clip();
+  // rayo de luz desde lo alto
+  if(beam > 0.002){
+    const lg = ctx.createLinearGradient(0, CY-R, 0, CY+R*0.6);
+    lg.addColorStop(0, "rgba(123,191,212," + beam + ")");
+    lg.addColorStop(1, "rgba(123,191,212,0)");
+    ctx.beginPath();
+    ctx.moveTo(CX-8, CY-R); ctx.lineTo(CX+8, CY-R); ctx.lineTo(CX+78, CY+R*0.7); ctx.lineTo(CX-78, CY+R*0.7);
+    ctx.closePath(); ctx.fillStyle = lg; ctx.fill();
+  }
+  // estrellas
+  let top = null;
+  for(const s of stars){
+    if(s.picked){ top = s; continue; }
+    const p = starPos(s);
+    const tw = 0.5 + 0.5*Math.sin(t*0.001*s.sp*boost + s.ph);
+    const a = Math.min(1, (0.35 + 0.65*tw) * (0.6 + 0.4*boost));
+    ctx.globalAlpha = a * s.alpha;
+    ctx.beginPath(); ctx.arc(p.x, p.y, s.size*(1 + (boost-1)*0.25), 0, Math.PI*2);
+    ctx.fillStyle = s.size > 1.9 ? "#BFE3EE" : "#FFFFFF"; ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  // estrella elegida
+  if(top){
+    const hg = ctx.createRadialGradient(top.x, top.y, 0, top.x, top.y, top.r*5);
+    hg.addColorStop(0, "rgba(123,191,212," + (0.65*top.alpha) + ")");
+    hg.addColorStop(1, "rgba(123,191,212,0)");
+    ctx.beginPath(); ctx.arc(top.x, top.y, top.r*5, 0, Math.PI*2); ctx.fillStyle = hg; ctx.fill();
+    drawFourPoint(top.x, top.y, top.r, top.alpha);
+  }
+  ctx.restore();
+  // borde
+  ctx.beginPath(); ctx.arc(CX,CY,R,0,Math.PI*2);
+  ctx.strokeStyle = "#7BBFD4"; ctx.lineWidth = 2.5; ctx.stroke();
+}
+
+/* ---------- Secuencia ---------- */
+let phase = "idle", phaseT0 = 0, last = 0, winner = null, pick = null, from = null;
+const prayDur = reduce ? 900 : 2800, pickDur = reduce ? 300 : 1300, holdDur = 1000, fadeDur = 600;
+const ease = t => 1 - Math.pow(1-t, 3);
+
+function startSeq(){
+  if(busy || !pool.length) return;
+  setBusy(true); hideResult();
+  winner = pool[rnd(pool.length)];
+  phase = "pray"; phaseT0 = performance.now();
+}
+function beginPick(ts){
+  const cand = stars.filter(s => !s.picked);
+  pick = cand[rnd(cand.length)];
+  const p = starPos(pick);
+  from = {x:p.x, y:p.y, r:pick.size};
+  pick.picked = true; pick.x = p.x; pick.y = p.y; pick.r = pick.size; pick.alpha = 1;
+  phase = "pick"; phaseT0 = ts;
+}
+function recyclePick(){
+  if(!pick) return;
+  Object.assign(pick, newStar());
+  pick = null;
+}
+
+function frame(ts){
+  const dt = Math.min((ts-last)/1000, 0.05); last = ts;
+  const el = ts - phaseT0;
+  if(phase === "pray"){
+    targetRate = 0.9; targetBoost = 3; targetBeam = 0.22;
+    if(el > prayDur) beginPick(ts);
+  } else if(phase === "pick"){
+    targetRate = 0.05; targetBoost = 2; targetBeam = 0.3;
+    const e = ease(Math.min(el/pickDur,1));
+    pick.x = from.x + (CX-from.x)*e;
+    pick.y = from.y + (CY-from.y)*e;
+    pick.r = from.r + (9-from.r)*e;
+    if(el >= pickDur){
+      phase = "hold"; phaseT0 = ts;
+      drawn = [winner.name].concat(drawn.filter(n => n !== winner.name)).slice(0,30);
+      saveStore(); renderHistory(); showResult(winner, true);
+    }
+  } else if(phase === "hold"){
+    targetRate = 0.03; targetBoost = 1.4; targetBeam = 0.3;
+    if(el > holdDur){ phase = "fade"; phaseT0 = ts; }
+  } else if(phase === "fade"){
+    targetRate = 0.03; targetBoost = 1; targetBeam = 0;
+    pick.alpha = 1 - Math.min(el/fadeDur,1);
+    if(el >= fadeDur){ recyclePick(); phase = "idle"; setBusy(false); }
+  } else {
+    targetRate = 0.03; targetBoost = 1; targetBeam = 0;
+  }
+  const k = Math.min(1, dt*2.2);
+  spinRate += (targetRate - spinRate)*k;
+  boost += (targetBoost - boost)*k;
+  beam += (targetBeam - beam)*k;
+  rot += spinRate*dt;
+  draw(ts);
+  requestAnimationFrame(frame);
+}
+
+$("spin").addEventListener("click", startSeq);
+$("again").addEventListener("click", () => {
+  $("spin").scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"center"});
+  startSeq();
+});
+
+/* ---------- Arranque ---------- */
+loadStore();
+buildFilters();
+rebuildPool();
+renderHistory();
+renderPool("");
+fit(); makeStars();
+window.addEventListener("resize", fit);
+if(window.ResizeObserver) new ResizeObserver(fit).observe(cv);
+if(drawn.length){
+  const it = items.find(i => i.name === drawn[0]);
+  if(it){ showResult(it, false); setBusy(false); }
+}
+requestAnimationFrame(ts => { last = ts; frame(ts); });
+</script>
+</body>
+</html>
